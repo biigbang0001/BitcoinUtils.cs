@@ -135,17 +135,13 @@ Après avoir réinstallé MiningCore, vous devez intégrer notre décodeur/encod
            {
                try
                {
-                   // Décoder l'adresse Bech32 avec notre décodeur personnalisé
                    var (witVersion, witnessProgram, hrp) = DecodeBech32(address);
 
-                   // Vérifier la version du témoin (doit être 0 pour P2WPKH)
                    if (witVersion != 0)
                        throw new FormatException($"Version de témoin Bech32 non prise en charge : {witVersion}");
 
-                   // Créer un WitKeyId avec les données réelles
                    var result = new WitKeyId(witnessProgram);
 
-                   // Valider que l'adresse encodée correspond à l'entrée
                    var reencodedAddress = EncodeBech32(hrp, witVersion, witnessProgram);
                    if (reencodedAddress != address)
                        throw new FormatException("L'adresse encodée ne correspond pas à l'entrée");
@@ -177,14 +173,11 @@ Après avoir réinstallé MiningCore, vous devez intégrer notre décodeur/encod
                return result;
            }
 
-           // Décodeur Bech32 personnalisé
            private static (byte witVersion, byte[] witnessProgram, string hrp) DecodeBech32(string address)
            {
-               // Alphabet Bech32
                const string charset = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
                const char separator = '1';
 
-               // Décomposer l'adresse en HRP et données
                var parts = address.Split(new[] { separator }, 2);
                if (parts.Length != 2)
                    throw new FormatException("Adresse Bech32 invalide : format incorrect");
@@ -192,7 +185,6 @@ Après avoir réinstallé MiningCore, vous devez intégrer notre décodeur/encod
                var hrp = parts[0]; // "nito", "bc1", etc.
                var dataPart = parts[1]; // Reste de l'adresse après "1"
 
-               // Décoder les données (convertir les caractères Bech32 en valeurs bits 5)
                byte[] decodedData = new byte[dataPart.Length];
                for (int i = 0; i < dataPart.Length; i++)
                {
@@ -202,48 +194,38 @@ Après avoir réinstallé MiningCore, vous devez intégrer notre décodeur/encod
                    decodedData[i] = (byte)value;
                }
 
-               // Extraire la version du témoin (premier octet)
                byte witVersion = decodedData[0];
                if (witVersion > 16)
                    throw new FormatException($"Version de témoin Bech32 non prise en charge : {witVersion}");
 
-               // Ignorer les 6 derniers octets (checksum) et le premier octet (witVersion)
                byte[] dataWithoutChecksum = new byte[decodedData.Length - 6 - 1];
                Array.Copy(decodedData, 1, dataWithoutChecksum, 0, dataWithoutChecksum.Length);
 
-               // Convertir les données (bits 5) en bits 8
                byte[] witnessProgram = ConvertBits(dataWithoutChecksum, 5, 8, false);
 
-               // Vérifier la longueur du programme témoin (20 octets pour P2WPKH)
                if (witnessProgram.Length != 20)
                    throw new FormatException($"Programme témoin Bech32 invalide : longueur {witnessProgram.Length}, attendu 20 octets");
 
                return (witVersion, witnessProgram, hrp);
            }
 
-           // Encodeur Bech32 personnalisé
            private static string EncodeBech32(string hrp, byte witVersion, byte[] witnessProgram)
            {
-               // Alphabet Bech32
                const string charset = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
 
-               // Convertir le programme témoin (bits 8) en bits 5
                var data = ConvertBits(witnessProgram, 8, 5, true);
                if (data == null)
                    throw new FormatException("Échec de la conversion du programme témoin en bits 5");
 
-               // Ajouter la version du témoin au début
                var values = new byte[data.Length + 1];
                values[0] = witVersion;
                Array.Copy(data, 0, values, 1, data.Length);
 
-               // Calculer le checksum Bech32
                var checksum = CreateBech32Checksum(hrp, values);
                var combined = new byte[values.Length + checksum.Length];
                Array.Copy(values, 0, combined, 0, values.Length);
                Array.Copy(checksum, 0, combined, values.Length, checksum.Length);
 
-               // Encoder les données en caractères Bech32
                var sb = new StringBuilder();
                sb.Append(hrp);
                sb.Append('1');
@@ -255,7 +237,6 @@ Après avoir réinstallé MiningCore, vous devez intégrer notre décodeur/encod
                return sb.ToString();
            }
 
-           // Calculer le checksum Bech32
            private static byte[] CreateBech32Checksum(string hrp, byte[] values)
            {
                const int BECH32_CONST = 1;
@@ -274,7 +255,6 @@ Après avoir réinstallé MiningCore, vous devez intégrer notre décodeur/encod
                return checksum;
            }
 
-           // Étendre le HRP pour le calcul du checksum
            private static byte[] ExpandHrp(string hrp)
            {
                var result = new byte[2 * hrp.Length + 1];
@@ -286,7 +266,6 @@ Après avoir réinstallé MiningCore, vous devez intégrer notre décodeur/encod
                return result;
            }
 
-           // Calculer le polymod pour le checksum Bech32
            private static uint Polymod(byte[] values)
            {
                uint chk = 1;
@@ -304,7 +283,6 @@ Après avoir réinstallé MiningCore, vous devez intégrer notre décodeur/encod
                return chk;
            }
 
-           // Méthode utilitaire pour convertir les bits 5 en bits 8
            private static byte[] ConvertBits(byte[] data, int fromBits, int toBits, bool pad = true)
            {
                int acc = 0;
