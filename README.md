@@ -319,7 +319,7 @@ Après avoir réinstallé MiningCore, vous devez intégrer notre décodeur/encod
            }
        }
    }
-    ```
+ ```
 
 4. **Enregistrer et quitter** :
    - Enregistrez les modifications dans `nano` (`Ctrl+O`, `Enter`, `Ctrl+X`).
