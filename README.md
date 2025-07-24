@@ -101,7 +101,7 @@ Après avoir réinstallé MiningCore, vous devez intégrer notre décodeur/encod
 3. **Remplacer `BechSegwitAddressToDestination` et ajouter le décodeur** :
    - Remplacez la méthode `BechSegwitAddressToDestination` par celle qui utilise notre décodeur personnalisé, et ajoutez les méthodes de décodage/encodage à la fin du fichier. Voici le contenu complet de `BitcoinUtils.cs` après modification :
 
-  
+  ```bash
    using System.Diagnostics;
    using NBitcoin;
    using NBitcoin.DataEncoders;
@@ -341,7 +341,7 @@ Après avoir réinstallé MiningCore, vous devez intégrer notre décodeur/encod
            }
        }
    }
-   
+    ```
 
 4. **Enregistrer et quitter** :
    - Enregistrez les modifications dans `nano` (`Ctrl+O`, `Enter`, `Ctrl+X`).
